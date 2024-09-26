@@ -32,6 +32,9 @@ export default function Quiz() {
         </h1>
       ) : (
         <Question
+          score={score}
+          quizdataLength={quizData.length}
+          currentQuestionIndex={currentQuestionIndex}
           question={quizData[currentQuestionIndex]?.question}
           options={quizData[currentQuestionIndex].options}
           onSelectOption={onSelectOption}
