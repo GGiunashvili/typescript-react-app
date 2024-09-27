@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "task": "Research the capital of France",
+    "completed": false
+  },
+  {
+    "id": 2,
+    "task": "Read 'To Kill a Mockingbird' by Harper Lee",
+    "completed": true
+  },
+  {
+    "id": 3,
+    "task": "Learn about the smallest planet in the solar system",
+    "completed": false
+  },
+  {
+    "id": 4,
+    "task": "Understand the chemical symbol for water",
+    "completed": false
+  },
+  {
+    "id": 5,
+    "task": "Find out when the Titanic sank",
+    "completed": false
+  }
+]
