@@ -1,10 +1,29 @@
 import { useState } from "react";
-import todoData from "../todo.json";
 
 export default function Todo() {
-  const [todos, setTodos] = useState(todoData);
-  const [inputText, setInputText] = useState<string>("ramew");
-  const [filter, setFilter] = useState<"all" | "active" | "completed">("all"); // ფილტრის state
+  // todo მონაცემების ინიციალიზაცია პირდაპირ კომპონენტში
+  const [todos, setTodos] = useState([
+    { id: 1, task: "Research the capital of France", completed: false },
+    {
+      id: 2,
+      task: "Read 'To Kill a Mockingbird' by Harper Lee",
+      completed: true,
+    },
+    {
+      id: 3,
+      task: "Learn about the smallest planet in the solar system",
+      completed: false,
+    },
+    {
+      id: 4,
+      task: "Understand the chemical symbol for water",
+      completed: false,
+    },
+    { id: 5, task: "Find out when the Titanic sank", completed: false },
+  ]);
+
+  const [inputText, setInputText] = useState<string>("");
+  const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
 
   function inputChange(e: React.ChangeEvent<HTMLInputElement>) {
     setInputText(e.target.value);
@@ -12,7 +31,15 @@ export default function Todo() {
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log(inputText);
+    if (inputText.trim()) {
+      const newTodo = {
+        id: todos.length + 1, // ახალ ელემენტს უნიკალური id მივანიჭოთ
+        task: inputText,
+        completed: false,
+      };
+      setTodos([...todos, newTodo]); // დავამატოთ ახალი ტასკი
+      setInputText(""); // ტექსტური ველის გასუფთავება
+    }
   }
 
   // ფილტრავს აქტიურ (შეუსრულებელ) ტასკებს
@@ -29,29 +56,29 @@ export default function Todo() {
       ? activeTodos
       : completedTodos;
 
-  // ფუნქცია checkbox-ის ინდივიდუალური ცვლილებისათვის
   function inputOnChange(e: React.ChangeEvent<HTMLInputElement>, id: number) {
-    const checked = e.target.checked;
     const updatedTodos = todos.map((todo) => {
       if (todo.id === id) {
-        return { ...todo, completed: checked };
+        return { ...todo, completed: e.target.checked };
       }
       return todo;
     });
-    setTodos(updatedTodos); // განვაახლებთ todos-ის state
-    console.log(`Checkbox with id ${id} status:`, checked);
+    setTodos(updatedTodos); // განვაახლებთ todos state-ს
   }
 
-  // ფუნქცია შესრულებული ტასკების წასაშლელად
+  function deleteTodo(id: number) {
+    const updatedTodos = todos.filter((todo) => todo.id !== id);
+    setTodos(updatedTodos); // წავშალოთ todo
+  }
+
   function clearCompleted() {
     const activeTodos = todos.filter((todo) => !todo.completed);
-    setTodos(activeTodos); // განვაახლებთ todos, რომ შესრულებული ტასკები წავშალოთ
+    setTodos(activeTodos); // წავშალოთ შესრულებული ტასკები
   }
 
   return (
     <>
       <div className="p-10">
-        {/* ტექსტური ველის და სუბმით ფუნქცია */}
         <form onSubmit={onSubmit} className="flex">
           <input
             className="bg-gray-50 border border-gray-300 text-gray-900"
@@ -59,7 +86,7 @@ export default function Todo() {
             value={inputText}
             onChange={inputChange}
           />
-          <button type="submit">submit</button>
+          <button type="submit">Add Todo</button>
         </form>
 
         {/* ტასკების გამოჩენა ფილტრის მიხედვით */}
@@ -72,19 +99,23 @@ export default function Todo() {
               <input
                 className="w-10 h-10 text-blue-600 bg-gray-100 border-gray-300"
                 type="checkbox"
-                checked={todo.completed} // ინდივიდუალური checkbox-ის მდგომარეობა
-                onChange={(e) => inputOnChange(e, todo.id)} // id-ის გადაცემა
+                checked={todo.completed}
+                onChange={(e) => inputOnChange(e, todo.id)}
               />
               <label>{todo.task}</label>
-              <div>X</div>
+              <div
+                onClick={() => deleteTodo(todo.id)}
+                style={{ cursor: "pointer", color: "red" }}
+              >
+                X
+              </div>
             </div>
           ))}
         </div>
 
         <div className="flex items-start justify-center gap-5 mt-10">
-          <p>items left {activeTodos.length}</p>
-
           {/* "active", "completed" და "all" */}
+          <p>items left {activeTodos.length}</p>
           <p
             onClick={() => setFilter("all")}
             style={{
@@ -94,11 +125,11 @@ export default function Todo() {
           >
             all {todos.length}
           </p>
+
           <p
             onClick={() => setFilter("active")}
             style={{
               cursor: "pointer",
-              color: filter === "active" ? "blue" : "black",
             }}
           >
             active {activeTodos.length}
@@ -107,13 +138,11 @@ export default function Todo() {
             onClick={() => setFilter("completed")}
             style={{
               cursor: "pointer",
-              color: filter === "completed" ? "blue" : "black",
             }}
           >
             completed {completedTodos.length}
           </p>
 
-          {/* clear completed ღილაკი */}
           <p
             onClick={clearCompleted}
             style={{ cursor: "pointer", color: "red" }}
