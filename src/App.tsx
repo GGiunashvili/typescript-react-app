@@ -4,7 +4,7 @@
 // import State from "./componens/State";
 // import { useState } from "react";
 // import { sculptureList } from "./componens/Data";
-import ArtShop from "./componens/ArtShop";
+import Fr from "./componens/Fr";
 
 function App() {
   // const [index, setIndex] = useState(0); // Correct use of useState with parentheses
@@ -18,7 +18,8 @@ function App() {
       {/* <Form /> */}
       {/* <State index={index} handleClick={handleClick} />
       <State index={index} handleClick={handleClick} /> */}
-      <ArtShop />
+      {/* <ArtShop /> */}
+      <Fr />
     </>
   );
 }
