@@ -1,64 +1,62 @@
-import { useState, FormEvent, ChangeEvent } from "react";
+import React, { useState, FormEvent } from "react";
 
 export default function Form() {
-  const [answer, setAnswer] = useState<string>("");
-  const [error, setError] = useState<Error | null>(null);
-  const [status, setStatus] = useState<"typing" | "submitting" | "success">(
+  const [answer, setAnswer] = useState<string>(""); // პასუხის შესანახად
+  const [error, setError] = useState<string | undefined>(undefined); // შეცდომის შესანახად
+  const [state, setState] = useState<"typing" | "submitting" | "success">(
     "typing"
-  );
+  ); // ფორმის სტატუსი
+  const [mood, setMood] = useState<string>("Bad Mood"); // განწყობის შესანახად
 
-  if (status === "success") {
-    return <h1>That's right!</h1>;
-  }
-
-  async function handleSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
-    e.preventDefault();
-    setStatus("submitting");
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault(); // ფორმის დეფოლტ ქმედების შეჩერება
+    setState("submitting"); // ფორმის სტატუსი იცვლება
     try {
-      await submitForm(answer);
-      setStatus("success");
+      if (answer.trim() !== "lima") {
+        throw new Error("Answer cannot be empty!"); // ცარიელი პასუხის შემოწმება
+      }
+      setMood("Good Mood"); // სწორი პასუხისთვის განწყობის ცვლილება
+      setState("success"); // წარმატების სტატუსი
+      setError(undefined); // შეცდომის გასუფთავება
     } catch (err) {
-      setStatus("typing");
-      setError(err as Error); // Type assertion for Error
+      setMood("Bad Mood"); // შეცდომის დროს განწყობა
+      setState("typing"); // სტატუსი უბრუნდება `typing`-ს
+      setError((err as Error).message); // შეცდომის შეტანა
     }
   }
 
-  function handleTextareaChange(e: ChangeEvent<HTMLTextAreaElement>): void {
-    setAnswer(e.target.value);
+  function handleAnswer(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setAnswer(e.target.value); // პასუხის განახლება ტექსტარედან
   }
 
   return (
-    <>
-      <h2>City quiz</h2>
-      <p>
-        In which city is there a billboard that turns air into drinkable water?
-      </p>
+    <div>
+      <h1>{mood}</h1> {/* განწყობის ჩვენება */}
       <form onSubmit={handleSubmit}>
+        {" "}
+        {/* onSubmit გამოიყენება onClick-ის ნაცვლად */}
         <textarea
           value={answer}
-          onChange={handleTextareaChange}
-          disabled={status === "submitting"}
-        />
-        <br />
-        <button disabled={answer.length === 0 || status === "submitting"}>
+          onChange={handleAnswer}
+          disabled={state === "submitting"} // ტექსტარე დაბლოკილია სუბმიტის დროს
+        ></textarea>
+        <button
+          style={{
+            background:
+              answer.length === 0 || state === "submitting" ? "gray" : "red", // ფონის ფერი
+            color: "white",
+            cursor:
+              answer.length === 0 || state === "submitting"
+                ? "not-allowed"
+                : "pointer", // კურსორის ცვლილება
+          }}
+          disabled={answer.length === 0 || state === "submitting"} // ღილაკი დაბლოკილია საჭიროებისამებრ
+        >
           Submit
         </button>
-        {error !== null && <p className="Error">{error.message}</p>}
       </form>
-    </>
+      {error && <p style={{ color: "red" }}>{error}</p>}{" "}
+      {/* შეცდომის ჩვენება */}
+    </div>
   );
-}
-
-function submitForm(answer: string): Promise<void> {
-  // Simulating a network request.
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      const shouldError = answer.toLowerCase() !== "lima";
-      if (shouldError) {
-        reject(new Error("Good guess but a wrong answer. Try again!"));
-      } else {
-        resolve();
-      }
-    }, 1500);
-  });
 }
