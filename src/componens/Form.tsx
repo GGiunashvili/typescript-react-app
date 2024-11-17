@@ -1,42 +1,64 @@
-import { useState } from "react";
+import { useState, FormEvent, ChangeEvent } from "react";
 
 export default function Form() {
-  const [userInfo, setUserInfo] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+  const [answer, setAnswer] = useState<string>("");
+  const [error, setError] = useState<Error | null>(null);
+  const [status, setStatus] = useState<"typing" | "submitting" | "success">(
+    "typing"
+  );
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>): void {
-    e.preventDefault();
-    console.log(userInfo);
+  if (status === "success") {
+    return <h1>That's right!</h1>;
   }
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUserInfo({ ...userInfo, [event.target.name]: event.target.value });
-  };
+  async function handleSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
+    e.preventDefault();
+    setStatus("submitting");
+    try {
+      await submitForm(answer);
+      setStatus("success");
+    } catch (err) {
+      setStatus("typing");
+      setError(err as Error); // Type assertion for Error
+    }
+  }
+
+  function handleTextareaChange(e: ChangeEvent<HTMLTextAreaElement>): void {
+    setAnswer(e.target.value);
+  }
+
   return (
     <>
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column" }}
-      >
-        <label htmlFor="name">Name</label>
-        <input onChange={handleChange} type="text" id="name" name="name" />
-
-        <label htmlFor="email">Email</label>
-        <input onChange={handleChange} type="text" id="email" name="email" />
-
-        <label htmlFor="password">Password</label>
-        <input
-          onChange={handleChange}
-          type="password"
-          id="password"
-          name="password"
+      <h2>City quiz</h2>
+      <p>
+        In which city is there a billboard that turns air into drinkable water?
+      </p>
+      <form onSubmit={handleSubmit}>
+        <textarea
+          value={answer}
+          onChange={handleTextareaChange}
+          disabled={status === "submitting"}
         />
-
-        <button type="submit">Submit</button>
+        <br />
+        <button disabled={answer.length === 0 || status === "submitting"}>
+          Submit
+        </button>
+        {error !== null && <p className="Error">{error.message}</p>}
       </form>
     </>
   );
+}
+
+function submitForm(answer: string): Promise<void> {
+  // Simulating a network request.
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const shouldError = answer.toLowerCase() !== "lima";
+      if (shouldError) {
+        reject(new Error("Good guess but a wrong answer. Try again!"));
+      } else {
+        resolve();
+      }
+    }, 1500);
+  });
 }
